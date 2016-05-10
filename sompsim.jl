@@ -75,7 +75,7 @@ function sompsim()
 # 	muimin = 1
 # 	muimax = 1.05
 
-	vre = 0. #reset voltage
+	#vre = 0. #reset voltage
 
 # 	threshe = 1 #threshold for exc. neurons
 # 	threshi = 1
@@ -178,7 +178,7 @@ function sompsim()
 
   adaptInput = zeros(Ne+Ni)
 
-	v = rand(Ncells)*(-80) #membrane voltage
+	v = rand(Ncells)*VI #membrane voltage
 
 	lastSpike = -100*ones(Ncells) #time of last spike
 
@@ -217,7 +217,7 @@ function sompsim()
           if ci<Ne+1
             adaptInput[ci] = adaptInput[ci] + 0.1*(Vth-VL)*gEL
           end
-					v[ci] = vre
+					v[ci] = VL
 					lastSpike[ci] = t
 					if ns[ci] < maxTimes
             ns[ci] = ns[ci]+1
