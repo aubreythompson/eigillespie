@@ -5,12 +5,12 @@ using Distributions
 
 function sompsim()
 	println("setting up parameters")
-	Ncells = 30000
-	Ne = 20000
-	Ni = 5000
+	Ncells = 3000
+	Ne = 2000
+	Ni = 500
   N0 = Ncells-Ni-Ne
   K = 1000.0 #average number of E->E connections per neuron
-	T = 200 #simulation time (ms)
+	T = 20 #simulation time (ms)
 
   CEM = 1.0 #(μF/cm^2)
   CIM = 1.0
