@@ -5,12 +5,12 @@ using Distributions
 
 function sompsim()
 	println("setting up parameters")
-	Ncells = 3000
-	Ne = 2000
-	Ni = 500
+	Ncells = 30000
+	Ne = 20000
+	Ni = 5000
   N0 = Ncells-Ni-Ne
   K = 1000.0 #average number of E->E connections per neuron
-	T = 20 #simulation time (ms)
+	T = 200 #simulation time (ms)
 
   CEM = 1.0 #(μF/cm^2)
   CIM = 1.0
@@ -77,8 +77,8 @@ function sompsim()
 
 	vre = 0. #reset voltage
 
-	threshe = 1 #threshold for exc. neurons
-	threshi = 1
+# 	threshe = 1 #threshold for exc. neurons
+# 	threshi = 1
 
 	dt = .05 #simulation timestep (ms)
 	refrac = 5 #refractory period (ms)
@@ -99,29 +99,29 @@ function sompsim()
   r = 10.16 #mean firing rate (Hz)
   stimrates = zeros(N0)
   ud = Uniform()
-  er = 200
+
   for si = 1:N0
     p = rand(ud)
+    er = 200
     if p<.5
       while er>150
         sid = Exponential(1.0/r)
         er = rand(sid)
-        print(er)
       end
       stimrates[si] = er
     end
   end
 
 # 	mu = zeros(Ncells)
- 	thresh = zeros(Ncells)
+#  	thresh = zeros(Ncells)
  	tau = zeros(Ncells)
   gL = zeros(Ncells)
 
 # 	mu[1:Ne] = (muemax-muemin)*rand(Ne) + muemin
 # 	mu[(Ne+1):Ncells] = (muimax-muimin)*rand(Ni) + muimin
 
-	thresh[1:Ne] = Vth
-	thresh[(1+Ne):Ncells] = Vth
+# 	thresh[1:Ne] = Vth
+# 	thresh[(1+Ne):Ncells] = Vth
 
 	tau[1:Ne] = taue
 	tau[(1+Ne):Ncells] = taui
@@ -178,7 +178,7 @@ function sompsim()
 
   adaptInput = zeros(Ne+Ni)
 
-	v = rand(Ncells) #membrane voltage
+	v = rand(Ncells)*(-80) #membrane voltage
 
 	lastSpike = -100*ones(Ncells) #time of last spike
 
@@ -213,7 +213,7 @@ function sompsim()
 # 			end
 			if t > (lastSpike[ci] + refrac)  #not in refractory period
 				v[ci] += dt*((1/tau[ci])*gL[ci]*(VL-v[ci]) + synInput - adaptInput[ci])
-				if v[ci] > thresh[ci]  #spike occurred
+				if v[ci] > Vth  #spike occurred
           if ci<Ne+1
             adaptInput[ci] = adaptInput[ci] + 0.1*(Vth-VL)*gEL
           end
