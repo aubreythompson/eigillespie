@@ -207,14 +207,12 @@ function sompsim()
 			synInput = (xedecay[ci] - xerise[ci])/(tau1 - tau2) + (xidecay[ci] - xirise[ci])/(tau1 - tau2) + (x0decay[ci] - x0rise[ci])/(tau1 - tau2)
       if ci<Ne
         adaptInput[ci] = adaptInput[ci]-dt*adaptInput[ci]/taua
-
+      end
 # 			if (ci < Nstim) && (t > stimstart) && (t < stimend)
 # 				synInput += stimstr;
 # 			end
 			if t > (lastSpike[ci] + refrac)  #not in refractory period
 				v[ci] += dt*((1/tau[ci])*gL[ci]*(VL-v[ci]) + synInput - adaptInput[ci])
-      end
-
 				if v[ci] > thresh[ci]  #spike occurred
           if ci<Ne+1
             adaptInput[ci] = adaptInput[ci] + 0.1*(Vth-VL)*gEL
