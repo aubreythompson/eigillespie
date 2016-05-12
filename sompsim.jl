@@ -5,12 +5,13 @@ using Distributions
 
 function sompsim()
 	println("setting up parameters")
-	Ncells = 30000
+
 	Ne = 20000
 	Ni = 5000
-  N0 = Ncells-Ni-Ne
+  N0 = 20000
+  Ncells = Ne+Ni+N0
   K = 1000.0 #average number of E->E connections per neuron
-	T = 200 #simulation time (ms)
+	T = 100 #simulation time (ms)
 
   CEM = 1.0 #(μF/cm^2)
   CIM = 1.0
@@ -95,17 +96,21 @@ function sompsim()
   #input neurons fire with Poisson spike trains with rates given by an exponential distribution
   #each stimulus generates a random input firing rate pattern
   #(each stim is given to the input layer? in a way the input layer represents the stim?)
+
+  #the mean population rate of all the stimuli is 10.16
+  #but also, population rate=avg(neuron's rates)
   println("getting input stats")
   r = 10.16 #mean firing rate (Hz)
+  p = 0.5
   stimrates = zeros(N0)
   ud = Uniform()
 
   for si = 1:N0
-    p = rand(ud)
+    pr = rand(ud)
     er = 200
-    if p<.5
+    if pr<p
       while er>150
-        sid = Exponential(1.0/r)
+        sid = Exponential(r/p)
         er = rand(sid)
       end
       stimrates[si] = er
@@ -158,10 +163,8 @@ function sompsim()
 	times = zeros(Ncells,maxTimes)
 	ns = zeros(Int,Ncells)
 
-  #TODO: think harder about whether the input layer needs these variables
-  #or whether they need to be included in that of the other pops
-  #i.e. are these variables Inputs TO 'x' or FROM 'x'
 
+  #forwardInputsX are inputs FROM X
 	forwardInputsE = zeros(Ne+Ni) #summed weight of incoming E spikes
 	forwardInputsI = zeros(Ne+Ni)
   #forwardInputs0 = zeros(Ncells)
@@ -178,7 +181,7 @@ function sompsim()
 
   adaptInput = zeros(Ne+Ni)
 
-	v = rand(Ncells)*VI #membrane voltage
+	v = rand(Ne+Ni)*(Vth-VL)+VL #membrane voltage
 
 	lastSpike = -100*ones(Ncells) #time of last spike
 
@@ -206,13 +209,13 @@ function sompsim()
 
 			synInput = (xedecay[ci] - xerise[ci])/(tau1 - tau2) + (xidecay[ci] - xirise[ci])/(tau1 - tau2) + (x0decay[ci] - x0rise[ci])/(tau1 - tau2)
       if ci<Ne
-        adaptInput[ci] = adaptInput[ci]-dt*adaptInput[ci]/taua
+        adaptInput[ci] += -dt*adaptInput[ci]/taua
       end
 # 			if (ci < Nstim) && (t > stimstart) && (t < stimend)
 # 				synInput += stimstr;
 # 			end
 			if t > (lastSpike[ci] + refrac)  #not in refractory period
-				v[ci] += dt*((1/tau[ci])*gL[ci]*(VL-v[ci]) + synInput - adaptInput[ci])
+				v[ci] += dt*gL[ci]*(VL-v[ci]) + synInput - adaptInput[ci]
 				if v[ci] > Vth  #spike occurred
           if ci<Ne+1
             adaptInput[ci] = adaptInput[ci] + 0.1*(Vth-VL)*gEL
@@ -236,9 +239,9 @@ function sompsim()
 		end #end loop over neurons
     for ci = 1:N0
       if stimrates[ci]>0
-        F = 1-exp(-stimrates[ci]*dt)
-        p = rand(ud)
-        if F>p
+        F = stimrates[ci]*dt/1000 #probability that there is a spike in this interval
+        pr2 = rand(ud)
+        if F>pr2
           lastSpike[ci+Ni+Ne] = t
           if ns[ci+Ni+Ne] < maxTimes
             ns[ci+Ni+Ne] = ns[ci+Ni+Ne]+1
