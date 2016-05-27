@@ -4,91 +4,29 @@
 using Distributions
 
 function sompsim()
-	println("setting up parameters")
+	println("importing shared parameters")
+  weights=readdlm("weights.txt")
+  tau=readdlm("tau.txt")
+  Nns=readdlm("Nns.txt")
+  Ne=convert(Int16,Nns[1])
+  Ni=convert(Int16,Nns[2])
+  N0=convert(Int16,Nns[3])
+  Ncells=Ne+Ni+N0
 
-	Ne = 20000
-	Ni = 5000
-  N0 = 20000
-  Ncells = Ne+Ni+N0
-  K = 1000.0 #average number of E->E connections per neuron
+  println("setting up sim parameters")
+  #if you change gEL, you also need to change it in makew!
+  gEL=0.05
 	T = 100 #simulation time (ms)
 
-  CEM = 1.0 #(μF/cm^2)
-  CIM = 1.0
-
-  gEL = 0.05 #(mS/cm^2)
-  gIL = 0.05
-
-	taue = CEM/gEL #membrane time constant for exc. neurons (ms)
-	taui = CIM/gIL
   taua = 100
   tau1 = 3
   tau2 = 1
 
   VL = -65 #(mV) leak potential
   Vth = -50 #spiking threshold
-  VE = 0 #excitatory reversal potential
-  VI = -80 #inhibitory RP
-  Vde = VE-VL
-  Vdi = VI-VL
-
-	#connection probabilities
-	pe0 = K/N0
-	pi0 = pe0
-	pii = K/Ni
-  pei = pii
-  pee = K/Ne
-  pie = pee
-
-	sqrtK = sqrt(K)
-
-#	Nepop = 80
-
-  je0 = 4.846*Vde*gEL*tau1
-  ji0 = 3.808*Vde*gIL*tau1
-  jee = 0.462*Vde*gEL*tau1
-  jie = 1.270*Vde*gIL*tau1
-  jei = 10.5*Vdi*gEL*tau1
-  jii = 9.5*Vdi*gIL*tau1
-
-# 	jie = 4./(taui*sqrtK)
-# 	jei = -16.*1.2/(taue*sqrtK)
-# 	jii = -16./(taui*sqrtK)
-
-# 	#set up connection probabilities within and without blocks
-# 	ratioejee = 1.9
-# 	jeeout = 10./(taue*sqrtK)
-# 	jeein = ratioejee*10./(taue*sqrtK)
-
-# 	ratiopee = 2.5
-# 	peeout = K/(Nepop*(ratiopee-1) + Ne)
-# 	peein = ratiopee*peeout
-
-	#stimulation
-# 	Nstim = 400 #number of neurons to stimulate (indices 1 to Nstim will be stimulated)
-# 	stimstr = .07/taue
-# 	stimstart = T-500
-# 	stimend = T
-
-	#constant bias to each neuron type
-# 	muemin = 1.1
-# 	muemax = 1.2
-# 	muimin = 1
-# 	muimax = 1.05
-
-	#vre = 0. #reset voltage
-
-# 	threshe = 1 #threshold for exc. neurons
-# 	threshi = 1
 
 	dt = .05 #simulation timestep (ms)
 	refrac = 5 #refractory period (ms)
-
-	#synaptic time constants (ms)
-# 	tauerise = 1
-# 	tauedecay = 3
-# 	tauirise = 1
-# 	tauidecay = 2
 
 	maxrate = 50 #(Hz) maximum average firing rate.  if the average firing rate across the simulation for any neuron exceeds this value, some of that neuron's spikes will not be saved
 
@@ -99,7 +37,6 @@ function sompsim()
 
   #the mean population rate of all the stimuli is 10.16
   #but also, population rate=avg(neuron's rates)
-  println("getting input stats")
   r = 10.16 #mean firing rate (Hz)
   p = 0.5
   stimrates = zeros(N0)
@@ -117,52 +54,18 @@ function sompsim()
     end
   end
 
-# 	mu = zeros(Ncells)
-#  	thresh = zeros(Ncells)
- 	tau = zeros(Ncells)
-  gL = zeros(Ncells)
+#  	tau = zeros(Ncells)
+#   gL = zeros(Ncells)
 
-# 	mu[1:Ne] = (muemax-muemin)*rand(Ne) + muemin
-# 	mu[(Ne+1):Ncells] = (muimax-muimin)*rand(Ni) + muimin
+# 	tau[1:Ne] = taue
+# 	tau[(1+Ne):Ncells] = taui
 
-# 	thresh[1:Ne] = Vth
-# 	thresh[(1+Ne):Ncells] = Vth
-
-	tau[1:Ne] = taue
-	tau[(1+Ne):Ncells] = taui
-
-  gL[1:Ne] = gEL
-	gL[(1+Ne):(Ne+Ni)] = gIL
-
-	#Npop = round(Int,Ne/Nepop)
-
-	weights = zeros(Ncells,Ncells)
-
-	#random connections
-	weights[1:Ne,1:Ne] = (jee/sqrtK)*(rand(Ne,Ne) .< pee) #excitatory --> excitatory
-	weights[1:Ne,(1+Ne):(Ni+Ne)] = (jei/sqrtK)*(rand(Ne,Ni) .< pei) #inhibitory --> excitatory
-	weights[(1+Ne):(Ni+Ne),1:Ne] = (jie/sqrtK)*(rand(Ni,Ne) .< pie) #excitatory --> inhibitory
-	weights[(1+Ne):(Ni+Ne),(1+Ne):(Ni+Ne)] = (jii/sqrtK)*(rand(Ni,Ni) .< pii) #inhibitory --> inhibitory
-  weights[(1+Ne):(Ni+Ne),(1+Ni+Ne):Ncells] = (ji0/sqrtK)*(rand(Ni,N0) .< pi0) #input layer --> inhibitory
-  weights[1:Ne,(1+Ni+Ne):Ncells] = (je0/sqrtK)*(rand(Ne,N0) .< pe0) #input layer --> excitatory
-
-
-	#connections within cluster
-# 	for pii = 1:Npop
-# 		ipopstart = 1 + Nepop*(pii-1)
-# 		ipopend = pii*Nepop
-
-# 		weights[ipopstart:ipopend,ipopstart:ipopend] = jeein*(rand(Nepop,Nepop) .< peein)
-# 	end
-
-	for ci = 1:Ncells
-		weights[ci,ci] = 0
-	end
+#   gL[1:Ne] = gEL
+# 	gL[(1+Ne):(Ne+Ni)] = gIL
 
 	maxTimes = round(Int,maxrate*T/1000)
 	times = zeros(Ncells,maxTimes)
 	ns = zeros(Int,Ncells)
-
 
   #forwardInputsX are inputs FROM X
 	forwardInputsE = zeros(Ne+Ni) #summed weight of incoming E spikes
@@ -215,7 +118,7 @@ function sompsim()
 # 				synInput += stimstr;
 # 			end
 			if t > (lastSpike[ci] + refrac)  #not in refractory period
-				v[ci] += dt*gL[ci]*(VL-v[ci]) + synInput - adaptInput[ci]
+				v[ci] += dt*(VL-v[ci])/tau[ci] + synInput - adaptInput[ci]
 				if v[ci] > Vth  #spike occurred
           if ci<Ne+1
             adaptInput[ci] = adaptInput[ci] + 0.1*(Vth-VL)*gEL
@@ -260,5 +163,6 @@ function sompsim()
 	@printf("\r")
 	times = times[:,1:maximum(ns)]
 
-	return times,ns,Ne,Ni,Ncells,T
+	return times,ns,Ne,Ni,Ncells,T,stimrates
 end
+
