@@ -12,16 +12,16 @@ stimnum=2
 mi=3 #maximum iterations
 stimrates=readdlm(string("Documents/Piriform/code/Data/stimrates",stimnum,".txt"))
 
-ns=readdlm(string("Documents/Piriform/code/Data/spikes",stimnum,".txt"))
-times=readdlm(string("Documents/Piriform/code/Data/times",stimnum,".txt"))
+ns=readdlm(string("Documents/Piriform/code/Data/spikes5-",stimnum,".txt"))
+times=readdlm(string("Documents/Piriform/code/Data/times5-",stimnum,".txt"))
 T=maximum(times)
-for i=2:mi
-  println(i)
-  newtimes =readdlm(string("Documents/Piriform/code/Data/times",i,"-",stimnum,".txt"))+T
-  times=[times newtimes] #fix this so it doesn't make them all spike at T here
-  ns=ns+readdlm(string("Documents/Piriform/code/Data/spikes",i,"-",stimnum,".txt"))
-  T=maximum(times)
-end
+# for i=2:mi
+#   println(i)
+#   newtimes =readdlm(string("Documents/Piriform/code/Data/times",i,"-",stimnum,".txt"))+T
+#   times=[times newtimes] #fix this so it doesn't make them all spike at T here
+#   ns=ns+readdlm(string("Documents/Piriform/code/Data/spikes",i,"-",stimnum,".txt"))
+#   T=maximum(times)
+# end
 println(T)
 println("mean excitatory firing rate: ",mean(1000*ns[1:Ne]/T)," Hz")
 println("mean inhibitory firing rate: ",mean(1000*ns[(Ne+1):(Ni+Ne)]/T)," Hz")
@@ -56,11 +56,7 @@ for ci=1:Ne
   for vi=2:size(vals,1)
     eisis=[eisis vals[vi]-vals[vi-1]]
   end
-  if mean(eisis[2:end])>0
-    cve[ci]=std(eisis[2:end])/mean(eisis[2:end])
-  else
-    cve[ci]=0
-  end
+  cve[ci]=std(eisis[2:end])/mean(eisis[2:end])
 end
 
 cvenonnan=[0]
@@ -71,10 +67,11 @@ for i=1:size(cve,1)
 end
 
 cvenonnan=cvenonnan[find(cvenonnan)]
-println(cvenonnan)
 figure(figsize=(4,4))
-ne, binse=hist(cvenonnan)
-bar(ne[2:end],binse)
+ne, binse=hist(cvenonnan,100)
+bar(ne[2:end],binse,.01)
+xlabel("ISI CV")
+ylabel("Number of E neurons")
 
 cvi=zeros(Int64(Ne))
 for ci=(Ne+1):(Ne+Ni)
@@ -95,25 +92,27 @@ for i=1:size(cvi,1)
 end
 
 cvinonnan=cvinonnan[find(cvinonnan)]
-println(cvinonnan)
+
+print(cvinonnan)
 
 figure(figsize=(4,4))
+ni, binsi=hist(cvinonnan,100)
+bar(ni[2:end],binsi,.01)
+xlabel("ISI CV")
+ylabel("Number of I neurons")
 
-ni, binsi=hist(cvinonnan)
-bar(ni[2:end],binsi)
-
-
-figure(figsize=(4,4))
-ne, binse=hist(1000*ns[1:Ne]/T,100)
-bar(ne[2:end],binse)
-figure(figsize=(4,4))
-ni, binsi=hist(1000*ns[(Ne+1):(Ni+Ne)]/T,100)
-bar(ni[2:end],binsi)
 
 figure(figsize=(4,4))
-bar(linspace(1,Ne,Ne),1000*ns[1:Ne]/T)
+nefr, binsefr=hist(1000*ns[1:Ne]/T,100)
+bar(nefr[2:end],binsefr)
 figure(figsize=(4,4))
-bar(linspace(1,Ni,Ni),1000*ns[(Ne+1):(Ni+Ne)]/T)
+nifr, binsifr=hist(1000*ns[(Ne+1):(Ni+Ne)]/T,100)
+bar(nifr[2:end],binsifr)
+
+# figure(figsize=(4,4))
+# bar(linspace(1,Ne,Ne),1000*ns[1:Ne]/T)
+# figure(figsize=(4,4))
+# bar(linspace(1,Ni,Ni),1000*ns[(Ne+1):(Ni+Ne)]/T)
 
 
 #compute spareness index (SPI)
