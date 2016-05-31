@@ -6,6 +6,8 @@ Ni=Nns[2]
 N0=Nns[3]
 Ncells=sum(Nns)
 
+
+#concatenate data from multiple iterations of one stimulus
 stimnum=2
 mi=3 #maximum iterations
 stimrates=readdlm(string("Documents/Piriform/code/Data/stimrates",stimnum,".txt"))
@@ -26,6 +28,9 @@ println("mean inhibitory firing rate: ",mean(1000*ns[(Ne+1):(Ni+Ne)]/T)," Hz")
 println("mean input firing rate: ",mean(1000*ns[(Ne+Ni+1):(Ncells)]/T)," Hz")
 println("mean input firing rate (theoretically): ",mean(stimrates)," Hz")
 
+
+#plot raster
+
 println("creating plot")
 figure(figsize=(4,4))
 for ci = 1:(Ncells)
@@ -40,6 +45,8 @@ ylabel("Neuron")
 xlabel("Time")
 tight_layout()
 savefig("output.png",dpi=150)
+
+##get CV histograms
 
 cve=zeros(Int64(Ne))
 for ci=1:Ne
@@ -92,7 +99,7 @@ println(cvinonnan)
 
 figure(figsize=(4,4))
 
-ni, binsi=hist(cvinonnan) #hist(cvi,20) #there seems to be a weird thing where hist expects integers????
+ni, binsi=hist(cvinonnan)
 bar(ni[2:end],binsi)
 
 
