@@ -103,11 +103,15 @@ ylabel("Number of I neurons")
 
 
 figure(figsize=(4,4))
-nefr, binsefr=hist(1000*ns[1:Ne]/T,100)
+nefr, binsefr=hist(1000*ns[1:Ne]/T,50)
 bar(nefr[2:end],binsefr)
+xlabel("Firing rate")
+ylabel("Number of E neurons")
 figure(figsize=(4,4))
-nifr, binsifr=hist(1000*ns[(Ne+1):(Ni+Ne)]/T,100)
+nifr, binsifr=hist(1000*ns[(Ne+1):(Ni+Ne)]/T,50)
 bar(nifr[2:end],binsifr)
+xlabel("Firing rate")
+ylabel("Number of I neurons")
 
 # figure(figsize=(4,4))
 # bar(linspace(1,Ne,Ne),1000*ns[1:Ne]/T)

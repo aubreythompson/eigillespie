@@ -5,7 +5,9 @@ using Distributions
 
 function sompsim()
 	println("importing shared parameters")
-  weights=readdlm("weights.txt")
+  projections=readdlm("projections.txt")
+  J=readdlm("J.txt")
+  Ks=readdlm("Ks.txt")
   tau=readdlm("tau.txt")
   Nns=readdlm("Nns.txt")
   Ne=convert(Int16,Nns[1])
@@ -67,13 +69,14 @@ function sompsim()
 	times = zeros(Ncells,maxTimes)
 	ns = zeros(Int,Ncells)
 
-  #forwardInputsX are inputs FROM X
+  #forwardInputsX are inputs FROM X TO neuron at index
+  #oh, that means forwardInputs0 should be a thing? I guess I'm crazy??
 	forwardInputsE = zeros(Ne+Ni) #summed weight of incoming E spikes
 	forwardInputsI = zeros(Ne+Ni)
-  #forwardInputs0 = zeros(Ncells)
+  forwardInputs0 = zeros(Ne+Ni)
 	forwardInputsEPrev = zeros(Ne+Ni) #as above, for previous timestep
 	forwardInputsIPrev = zeros(Ne+Ni)
-  #forwardInputs0Prev = zeros(Ncells)
+  forwardInputs0Prev = zeros(Ne+Ni)
 
 	xerise = zeros(Ncells) #auxiliary variables for E/I currents (difference of exponentials)
 	xedecay = zeros(Ncells)
@@ -107,8 +110,8 @@ function sompsim()
 			xedecay[ci] += -dt*xedecay[ci]/tau1 + forwardInputsEPrev[ci]
 			xirise[ci] += -dt*xirise[ci]/tau2 + forwardInputsIPrev[ci]
 			xidecay[ci] += -dt*xidecay[ci]/tau1 + forwardInputsIPrev[ci]
-      x0rise[ci] += -dt*x0rise[ci]/tau2 #+ forwardInputs0Prev[ci]
-			x0decay[ci] += -dt*x0decay[ci]/tau1 #+ forwardInputs0Prev[ci]
+      x0rise[ci] += -dt*x0rise[ci]/tau2 + forwardInputs0Prev[ci]
+			x0decay[ci] += -dt*x0decay[ci]/tau1 + forwardInputs0Prev[ci]
 
 			synInput = (xedecay[ci] - xerise[ci])/(tau1 - tau2) + (xidecay[ci] - xirise[ci])/(tau1 - tau2) + (x0decay[ci] - x0rise[ci])/(tau1 - tau2)
       if ci<Ne
@@ -129,13 +132,21 @@ function sompsim()
             ns[ci] = ns[ci]+1
 						times[ci,ns[ci]] = t
 					end
-
-					for j = 1:(Ne+Ni)
-						if weights[j,ci] > 0  #E synapse
-							forwardInputsE[j] += weights[j,ci]
-						elseif weights[j,ci] < 0  #I synapse
-							forwardInputsI[j] += weights[j,ci]
-						end
+          projci=projections[(sum(K[ci-1])+1):sum(K[ci])]
+					for j =1:size(projci,1)
+            if projci[j]<=Ne
+              if ci <= Ne  #E->E synapse
+                forwardInputsE[projci[j]] += J[3]
+              elseif ci <= Ni  #I->E synapse
+                forwardInputsI[projci[j]] += J[5]
+              end
+            elseif projci[j]<=Ne+Ni
+              if ci <= Ne  #E->I synapse
+							  forwardInputsE[projci[j]] += J[4]
+						  elseif ci <= Ne+Ni  #I->I synapse
+							  forwardInputsI[projci[j]] += J[6]
+              end #end if(excitatory or inhibitory pre-syn cell)
+            end	#end if(excitatory or inhibitory post-syn cell)
 					end #end loop over synaptic projections
 				end #end if(spike occurred)
 			end #end if(not refractory)
@@ -150,15 +161,20 @@ function sompsim()
             ns[ci+Ni+Ne] = ns[ci+Ni+Ne]+1
 					  times[ci+Ni+Ne,ns[ci+Ni+Ne]] = t
 				  end
-          for j = 1:(Ne+Ni)
-            forwardInputsE[j] += weights[j,ci+Ni+Ne]
+          projci=projections[(sum(K[ci+Ni+Ne-1])+1):sum(K[ci+Ni+Ne])]
+          for j =1:size(projci,1)
+            if projci[j]<=Ne
+              forwardInputs0[projci[j]] += J[1]
+            elseif projci[j]<=Ne+Ni
+              forwardInputs0[projci[j]] += J[2]
+            end
 					end
         end
       end
     end
 		forwardInputsEPrev = copy(forwardInputsE)
 		forwardInputsIPrev = copy(forwardInputsI)
-    #forwardInputs0Prev = copy(forwardInputs0)
+    forwardInputs0Prev = copy(forwardInputs0)
 	end #end loop over time
 	@printf("\r")
 	times = times[:,1:maximum(ns)]
