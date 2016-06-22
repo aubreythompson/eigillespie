@@ -60,47 +60,89 @@ projections=[0]
 Ks=zeros(Ncells)
 
 #random connections
-# weights[1:Ne,1:Ne] = (jee/sqrtK)*(rand(Ne,Ne) .< pee) #excitatory --> excitatory
-# weights[1:Ne,(1+Ne):(Ni+Ne)] = (jei/sqrtK)*(rand(Ne,Ni) .< pei) #inhibitory --> excitatory
-# weights[(1+Ne):(Ni+Ne),1:Ne] = (jie/sqrtK)*(rand(Ni,Ne) .< pie) #excitatory --> inhibitory
-# weights[(1+Ne):(Ni+Ne),(1+Ne):(Ni+Ne)] = (jii/sqrtK)*(rand(Ni,Ni) .< pii) #inhibitory --> inhibitory
-# weights[(1+Ne):(Ni+Ne),(1+Ni+Ne):Ncells] = (ji0/sqrtK)*(rand(Ni,N0) .< pi0) #input layer --> inhibitory
-# weights[1:Ne,(1+Ni+Ne):Ncells] = (je0/sqrtK)*(rand(Ne,N0) .< pe0) #input layer --> excitatory
+# weights[1:Ne,1:Ne] = (rand(Ne,Ne) .< pee)#*(jee/sqrtK) #excitatory --> excitatory
+# weights[1:Ne,(1+Ne):(Ni+Ne)] = (rand(Ne,Ni) .< pei)#*(jei/sqrtK) #inhibitory --> excitatory
+# weights[(1+Ne):(Ni+Ne),1:Ne] = (rand(Ni,Ne) .< pie)#*(jie/sqrtK) #excitatory --> inhibitory
+# weights[(1+Ne):(Ni+Ne),(1+Ne):(Ni+Ne)] = (rand(Ni,Ni) .< pii)#*(jii/sqrtK) #inhibitory --> inhibitory
+# weights[(1+Ne):(Ni+Ne),(1+Ni+Ne):Ncells] = (rand(Ni,N0) .< pi0)#*(ji0/sqrtK) #input layer --> inhibitory
+# weights[1:Ne,(1+Ni+Ne):Ncells] = (rand(Ne,N0) .< pe0)#*(je0/sqrtK) #input layer --> excitatory
 
-#Ks here are out-degrees, which is why they are not on average 1000
+weights=readdlm("Documents/Piriform/code/Data/weights.txt")
+fw=(weights.!=0)
+fwn=(weights.<0)
+sum(fw,1)
+Ks==sum(fw,1)'
+using PyPlot
+figure()
+plot(1:45000,Ks-sum(fw,1)')
+#Ks here are out-degrees, which is why they are not on average 1000 (does that make sense?)
+#a neuron RECEIVES on average K inputs from each presyn population
+#which would mean I neurons would have bigger out degrees since there are fewer of them
 #this is definitely what we want because these are projections.
 #indices sum(K[:i]) to sum(K[:i+1]) are downstream from neuron i+1
 #excitatory projections
 for i=1:Ne
-  weightsee = (rand(1,Ne) .< pee) #excitatory --> excitatory
+  weightsee = (rand(Ne,1) .< pee) #excitatory --> excitatory
   weightsee[i] = 0
-  weightsie = (rand(1,Ni) .< pie) #excitatory --> inhibitory
-  Ks[i]=size(find(weightsee),1)+size(find(weightsie),1)
-  projections=[projections; find(weightsee); find(weightsie)+Ne]
+  weightsie = (rand(Ni,1) .< pie) #excitatory --> inhibitory
+#   weightsee = weights[1:Ne,i]
+#   weightsie = weights[(Ne+1):(Ne+Ni),i]
+  fee=find(weightsee)
+  fie=find(weightsie)
+  Ks[i]=size(fee,1)+size(fie,1)
+  projections=[projections; fee; fie+Ne]
 end
+
+writedlm("Documents/Piriform/code/Data/projections-weights.txt",projections)
+writedlm("Documents/Piriform/code/Data/Ks-weights.txt",Ks)
+
 #inhibitory projections
 for i=1:Ni
-  weightsei = (rand(1,Ne) .< pei) #inhibitory --> excitatory
-  weightsii = (rand(1,Ni) .< pii) #inhibitory --> inhibitory
+  weightsei = (rand(Ne,1) .< pei) #inhibitory --> excitatory
+  weightsii = (rand(Ni,1) .< pii) #inhibitory --> inhibitory
   weightsii[i] = 0
-  Ks[i+Ne]=size(find(weightsei),1)+size(find(weightsii),1)
-  projections= [projections; find(weightsei); find(weightsii)+Ne]
+#   weightsei = weights[1:Ne,Ne+i]
+#   weightsii = weights[(Ne+1):(Ne+Ni),Ne+i]
+  fei=find(weightsei)
+  fii=find(weightsii)
+  Ks[i+Ne]=size(fei,1)+size(fii,1)
+  projections= [projections; fei; fii+Ne]
 end
+
+
+
 #input projections
+#projections=projections2
 for i=1:N0
-  weightse0 = (rand(1,Ne) .< pe0) #input layer --> inhibitory
-  weightsi0 = (rand(1,Ni) .< pi0) #input layer --> excitatory
-  Ks[i+Ne+Ni]=size(find(weightse0),1)+size(find(weightsi0),1)
-  projections= [projections; find(weightse0); find(weightsi0)+Ne]
+  weightse0 = (rand(Ne,1) .< pe0) #input layer --> inhibitory
+  weightsi0 = (rand(Ni,1) .< pi0) #input layer --> excitatory
+#   weightse0 = weights[1:Ne,Ne+Ni+i]
+#   weightsi0 = weights[(Ne+1):(Ne+Ni),Ne+Ni+i]
+  fe0=find(weightse0)
+  fi0=find(weightsi0)
+  Ks[i+Ne+Ni]=size(fe0,1)+size(fi0,1)
+  projections= [projections; fe0; fi0+Ne]
 end
 
-
-projci=projections[(sum(Ks[1:0])+1):sum(Ks[1:1])]
-size(projci)
-
-writedlm("Documents/Piriform/code/piriform/projections.txt", projections)
-writedlm("Documents/Piriform/code/piriform/Ks.txt", Ks)
+projections=readdlm("Documents/Piriform/code/Data/projections.txt")
+Ks=readdlm("Documents/Piriform/code/Data/Ks.txt")
 writedlm("Documents/Piriform/code/piriform/J.txt", J)
 writedlm("Documents/Piriform/code/piriform/tau.txt", tau)
 writedlm("Documents/Piriform/code/piriform/Nns.txt",Nns)
+
+# inKs=zeros(Ncells)
+# sp=size(projections,1)
+# for i=1:Ncells
+#   fsp=size(find(projections-i*ones(sp)),1)
+#   inKs[i]=sp-fsp
+# end
+# fsp=size(find(projections-5*ones(sp)),1)
+# sp-fsp
+# ci=1
+# projci=projections[(sum(Ks[1:(ci-1)])+1):(sum(Ks[1:ci]))]
+# Ks[ci]
+# println(projci)
+# weights[44,1]
+# writedlm("Documents/Piriform/code/piriform/projections2.txt", projections)
+# writedlm("Documents/Piriform/code/piriform/Ks2.txt", Ks)
 
