@@ -6,7 +6,7 @@
 include("sompsim.jl")
 
 tic()
-times,ns,Ne,Ni,Ncells,T,stimrates = sompsim()
+times,ns,Ne,Ni,Ncells,T,stimrates = sompsim(0)
 toc()
 
 writedlm("times.txt", times)

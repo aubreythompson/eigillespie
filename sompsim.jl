@@ -3,22 +3,23 @@
 #see README for more information
 using Distributions
 
-function sompsim()
+function sompsim(stim)
 	println("importing shared parameters")
-  projections=readdlm("projections.txt")
-  J=readdlm("J.txt")
-  Ks=readdlm("Ks.txt")
-  tau=readdlm("tau.txt")
-  Nns=readdlm("Nns.txt")
-  Ne=convert(Int16,Nns[1])
-  Ni=convert(Int16,Nns[2])
-  N0=convert(Int16,Nns[3])
+  projections=readdlm("Documents/Piriform/code/Data/projections.txt")
+  J=readdlm("Documents/Piriform/code/Data/J.txt")
+  Ks=readdlm("Documents/Piriform/code/Data/Ks.txt")
+  tau=readdlm("Documents/Piriform/code/Data/tau.txt")
+  Nns=readdlm("Documents/Piriform/code/Data/Nns.txt")
+  Nns=readdlm("Documents/Piriform/code/Data/Nns.txt")
+  Ne=convert(Int64,Nns[1])
+  Ni=convert(Int64,Nns[2])
+  N0=convert(Int64,Nns[3])
   Ncells=Ne+Ni+N0
 
   println("setting up sim parameters")
   #if you change gEL, you also need to change it in makew!
   gEL=0.05
-	T = 100 #simulation time (ms)
+	T = 50 #simulation time (ms)
 
   taua = 100
   tau1 = 3
@@ -30,7 +31,7 @@ function sompsim()
 	dt = .05 #simulation timestep (ms)
 	refrac = 5 #refractory period (ms)
 
-	maxrate = 50 #(Hz) maximum average firing rate.  if the average firing rate across the simulation for any neuron exceeds this value, some of that neuron's spikes will not be saved
+  maxrate = 400 #(Hz) maximum average firing rate.  if the average firing rate across the simulation for any neuron exceeds this value, some of that neuron's spikes will not be saved
 
   #input statistics
   #input neurons fire with Poisson spike trains with rates given by an exponential distribution
@@ -39,21 +40,24 @@ function sompsim()
 
   #the mean population rate of all the stimuli is 10.16
   #but also, population rate=avg(neuron's rates)
-  r = 10.16 #mean firing rate (Hz)
-  p = 0.5
-  stimrates = zeros(N0)
-  ud = Uniform()
-
-  for si = 1:N0
-    pr = rand(ud)
-    er = 200
-    if pr<p
-      while er>150
-        sid = Exponential(r/p)
-        er = rand(sid)
+  ud=Uniform()
+  if stim==0
+    r = 10.16 #mean firing rate (Hz)
+    p = 0.5
+    stimrates = zeros(N0)
+    for si = 1:N0
+      pr = rand(ud)
+      er = 200
+      if pr<p
+        while er>150
+          sid = Exponential(r/p)
+          er = rand(sid)
+        end
+        stimrates[si] = er
       end
-      stimrates[si] = er
     end
+  else
+    stimrates=readdlm(string("stimrates",stim,".txt"))
   end
 
 #  	tau = zeros(Ncells)
@@ -103,7 +107,7 @@ function sompsim()
 		t = dt*ti
 		forwardInputsE[:] = 0
 		forwardInputsI[:] = 0
-    #forwardInputs0[:] = 0
+    forwardInputs0[:] = 0
 
 		for ci = 1:(Ne+Ni)
 			xerise[ci] += -dt*xerise[ci]/tau2 + forwardInputsEPrev[ci]
@@ -132,18 +136,18 @@ function sompsim()
             ns[ci] = ns[ci]+1
 						times[ci,ns[ci]] = t
 					end
-          projci=projections[(sum(K[ci-1])+1):sum(K[ci])]
+          projci=projections[(sum(Ks[1:(ci-1)])+1):(sum(Ks[1:ci]))]
 					for j =1:size(projci,1)
             if projci[j]<=Ne
               if ci <= Ne  #E->E synapse
                 forwardInputsE[projci[j]] += J[3]
-              elseif ci <= Ni  #I->E synapse
+              elseif ci <= Ne+Ni && ci>Ne #I->E synapse
                 forwardInputsI[projci[j]] += J[5]
               end
-            elseif projci[j]<=Ne+Ni
+            elseif projci[j]<=Ne+Ni && projci[j]>Ne
               if ci <= Ne  #E->I synapse
 							  forwardInputsE[projci[j]] += J[4]
-						  elseif ci <= Ne+Ni  #I->I synapse
+						  elseif ci <= Ne+Ni && ci>Ne #I->I synapse
 							  forwardInputsI[projci[j]] += J[6]
               end #end if(excitatory or inhibitory pre-syn cell)
             end	#end if(excitatory or inhibitory post-syn cell)
@@ -161,11 +165,11 @@ function sompsim()
             ns[ci+Ni+Ne] = ns[ci+Ni+Ne]+1
 					  times[ci+Ni+Ne,ns[ci+Ni+Ne]] = t
 				  end
-          projci=projections[(sum(K[ci+Ni+Ne-1])+1):sum(K[ci+Ni+Ne])]
+          projci=projections[(sum(Ks[1:(ci+Ni+Ne-1)])+1):(sum(Ks[1:(ci+Ni+Ne)]))]
           for j =1:size(projci,1)
             if projci[j]<=Ne
               forwardInputs0[projci[j]] += J[1]
-            elseif projci[j]<=Ne+Ni
+            elseif projci[j]<=Ne+Ni && projci[j]>Ne
               forwardInputs0[projci[j]] += J[2]
             end
 					end
