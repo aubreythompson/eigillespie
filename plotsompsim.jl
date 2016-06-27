@@ -1,33 +1,34 @@
 using PyPlot
 
-Nns=readdlm("Documents/Piriform/code/Data/Nns.txt")
+Nns=readdlm("Documents/Piriform/code/Data/Nns3.txt")
 Ne=Int64(Nns[1])
-Ni=Int64(Nns[2])
-N0=Int64(Nns[3])
+Np=Int64(Nns[2])
+Ns=Int64(Nns[3])
+N0=Int64(Nns[4])
 Ncells=Int64(sum(Nns))
 
-maxrate=200
+maxrate=400
 T=1000
 maxTimes = Int64(maxrate*T/1000)
-stimrange=3:48
+stimrange=[1,3,4,5,6,7]
 s=Int64(size(stimrange,1))
 stimrates=zeros(N0,s)
 ns=zeros(Ncells,s)
-times=zeros(Ncells,maxTimes,s)
-maxts=zeros(s)
+# times=zeros(Ncells,maxTimes,s)
+# maxts=zeros(s)
 
-# for stimnum=1:s
-#   #stimrates[:,stimnum]=readdlm(string("Documents/Piriform/code/Data/stimrates",stimrange[stimnum],".txt"))
-#   #ns[:,stimnum]=readdlm(string("Documents/Piriform/code/Data/spikes",stimrange[stimnum],".txt"))
-#   t=readdlm(string("Documents/Piriform/code/Data/times",stimrange[stimnum],".txt"))
+for stimnum=1:s
+  stimrates[:,stimnum]=readdlm(string("Documents/Piriform/code/Data/3stimrates",stimrange[stimnum],".txt"))
+  ns[:,stimnum]=readdlm(string("Documents/Piriform/code/Data/3spikes",stimrange[stimnum],".txt"))
+#   t=readdlm(string("Documents/Piriform/code/Data/3times",stimrange[stimnum],".txt"))
 #   maxts[stimnum]=size(t,2)
-#   #times[:,1:size(t,2),stimnum]=t
-# end
+#   times[:,1:size(t,2),stimnum]=t
+end
 
-stimrates=readdlm("Documents/Piriform/code/Data/stimratesall.txt")
-ns=readdlm("Documents/Piriform/code/Data/spikesall.txt")
-times=readdlm("Documents/Piriform/code/Data/timesall.txt")
-maxts=readdlm("Documents/Piriform/code/Data/maxtsall.txt")
+# stimrates=readdlm("Documents/Piriform/code/Data/stimratesall.txt")
+# ns=readdlm("Documents/Piriform/code/Data/spikesall.txt")
+# times=readdlm("Documents/Piriform/code/Data/timesall.txt")
+# maxts=readdlm("Documents/Piriform/code/Data/maxtsall.txt")
 
 # figure()
 # plot(1:s,maxts)
@@ -45,10 +46,16 @@ maxts=readdlm("Documents/Piriform/code/Data/maxtsall.txt")
 #   ns=ns+readdlm(string("Documents/Piriform/code/Data/spikes",i,"-",stimnum,".txt"))
 #   T=maximum(times)
 # end
-println(T)
+
+stimrates=readdlm(string("Documents/Piriform/code/Data/3stimrates1.txt"))
+ns=readdlm(string("Documents/Piriform/code/Data/3spikes1.txt"))
+times=readdlm(string("Documents/Piriform/code/Data/3times1.txt"))
+T=maximum(times)
+
 println("mean excitatory firing rate: ",mean(1000*ns[1:Ne]/T)," Hz")
-println("mean inhibitory firing rate: ",mean(1000*ns[(Ne+1):(Ni+Ne)]/T)," Hz")
-println("mean input firing rate: ",mean(1000*ns[(Ne+Ni+1):(Ncells)]/T)," Hz")
+println("mean PV firing rate: ",mean(1000*ns[(Ne+1):(Np+Ne)]/T)," Hz")
+println("mean SOM firing rate: ",mean(1000*ns[(Ne+Np+1):(Ns+Np+Ne)]/T)," Hz")
+println("mean input firing rate: ",mean(1000*ns[(Ne+Np+Ns+1):(Ncells)]/T)," Hz")
 println("mean input firing rate (theoretically): ",mean(stimrates)," Hz")
 
 # println("mean excitatory firing rate: ",mean(1000*wns[1:Ne]/T)," Hz")
@@ -261,7 +268,7 @@ ylabel("Number of I neurons")
 
 
 #compute spareness index (SPI)
-
+Ni=Np+Ns
 espi=zeros(s)
 ispi=zeros(s)
 for i=1:s
@@ -297,10 +304,10 @@ sorte=sortperm(sli[1:Ne])
 sorti=sortperm(sli[(Ne+1):(Ne+Ni)])
 
 figure()
-plot(1:s,ns[sorte[18999],:]')
+plot(1:s,ns[sorte[200],:]')
 
 figure()
-plot(1:s,ns[sorti[5000],:]')
+plot(1:s,ns[sorti[500],:]')
 
 figure()
 plot(1:Ne,sort(sli[1:Ne]))
@@ -330,10 +337,10 @@ for i=1:(Ne+Ni)
 end
 
 figure()
-scatter(sli[1:Ne],ratepref[1:Ne])
+scatter(ratepref[1:Ne],sli[1:Ne])
 
 figure()
-scatter(sli[(Ne+1):(Ne+Ni)],ratepref[(Ne+1):(Ne+Ni)])
+scatter(ratepref[(Ne+1):(Ne+Ni)],sli[(Ne+1):(Ne+Ni)])
 
 # stimtimes=times[(Ne+Ni+1):Ncells,:]
 
