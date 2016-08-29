@@ -1,5 +1,15 @@
 using PyPlot
 
+Nns=readdlm("Documents/Piriform/code/Data/Nns6doubledensesmall.txt")
+Nel=Int64(Nns[1])
+Ner=Int64(Nns[2])
+Npl=Int64(Nns[3])
+Npr=Int64(Nns[4])
+Nsl=Int64(Nns[5])
+Nsr=Int64(Nns[6])
+N0=Int64(Nns[7])
+Ncells=Int64(sum(Nns))
+
 Nns=readdlm("Documents/Piriform/code/Data/Nns3.txt")
 Ne=Int64(Nns[1])
 Np=Int64(Nns[2])
@@ -8,9 +18,9 @@ N0=Int64(Nns[4])
 Ncells=Int64(sum(Nns))
 
 maxrate=400
-T=1000
+T=5000
 maxTimes = Int64(maxrate*T/1000)
-stimrange=[1,3,4,5,6,7]
+stimrange=[1:20]
 s=Int64(size(stimrange,1))
 stimrates=zeros(N0,s)
 ns=zeros(Ncells,s)
@@ -18,17 +28,48 @@ ns=zeros(Ncells,s)
 # maxts=zeros(s)
 
 for stimnum=1:s
-  stimrates[:,stimnum]=readdlm(string("Documents/Piriform/code/Data/3stimrates",stimrange[stimnum],".txt"))
-  ns[:,stimnum]=readdlm(string("Documents/Piriform/code/Data/3spikes",stimrange[stimnum],".txt"))
+  stimrates[:,stimnum]=readdlm(string("Documents/Piriform/code/Data/195959stimrates",stimrange[stimnum],".txt"))
+  ns[:,stimnum]=readdlm(string("Documents/Piriform/code/Data/195959spikes",stimrange[stimnum],".txt"))
 #   t=readdlm(string("Documents/Piriform/code/Data/3times",stimrange[stimnum],".txt"))
 #   maxts[stimnum]=size(t,2)
 #   times[:,1:size(t,2),stimnum]=t
 end
 
-# stimrates=readdlm("Documents/Piriform/code/Data/stimratesall.txt")
-# ns=readdlm("Documents/Piriform/code/Data/spikesall.txt")
-# times=readdlm("Documents/Piriform/code/Data/timesall.txt")
-# maxts=readdlm("Documents/Piriform/code/Data/maxtsall.txt")
+ind=14
+stimrates=readdlm(string("Documents/Piriform/code/Data/",ind,"-full10stimrates1.txt"))
+ns=readdlm(string("Documents/Piriform/code/Data/",ind,"-full10spikes1.txt"))
+times=readdlm(string("Documents/Piriform/code/Data/",ind,"-full10times1.txt"))
+T=maximum(times)
+N=45000
+Nel = convert(Int64,N*2.0/9)
+Ner = convert(Int64,N*2.0/9)
+Ne=Nel+Ner
+Npl = convert(Int64,N*1.0/36)
+Npr = convert(Int64,N*1.0/36)
+Np=Npl+Npr
+Nsl = convert(Int64,round(N*1.0/27))
+Nsr = convert(Int64,round(N*1.0/54))
+Ns=Nsl+Nsr
+Ni=Np+Ns
+N0 = convert(Int64,N*4.0/9)
+println([Nel,Ner,Npl,Npr,Nsl,Nsr,N0])
+lefr=mean(1000*ns[1:Nel,:]/T)
+refr=mean(1000*ns[(Nel+1):(Nel+Ner),:]/T)
+lpfr=mean(1000*ns[(Nel+Ner+1):(Nel+Ner+Npl),:]/T)
+rpfr=mean(1000*ns[(Nel+Ner+Npl+1):(Nel+Ner+Npl+Npr),:]/T)
+lsfr=mean(1000*ns[(Nel+Ner+Npl+Npr+1):(Nel+Ner+Npl+Npr+Nsl),:]/T)
+rsfr=mean(1000*ns[(Nel+Ner+Npl+Npr+Nsl+1):(Nel+Ner+Npl+Npr+Nsl+Nsr),:]/T)
+ifr=mean(1000*ns[(Nel+Ner+Npl+Npr+Nsl+Nsr):(N),:]/T)
+println("mean left excitatory firing rate: ",lefr," Hz")
+println("mean right excitatory firing rate: ",refr," Hz")
+println("mean left PV firing rate: ",lpfr," Hz")
+println("mean right PV firing rate: ",rpfr," Hz")
+println("mean left SOM firing rate: ",lsfr," Hz")
+println("mean right SOM firing rate: ",rsfr," Hz")
+println("mean input firing rate: ",ifr," Hz")
+println("mean input firing rate (theoretically): ",mean(stimrates)," Hz")
+#maxts=readdlm("Documents/Piriform/code/Data/maxtsall.txt")
+println(params[ind,:])
 
 # figure()
 # plot(1:s,maxts)
@@ -47,21 +88,192 @@ end
 #   T=maximum(times)
 # end
 
-stimrates=readdlm(string("Documents/Piriform/code/Data/3stimrates1.txt"))
-ns=readdlm(string("Documents/Piriform/code/Data/3spikes1.txt"))
-times=readdlm(string("Documents/Piriform/code/Data/3times1.txt"))
+
+Nns=readdlm("Documents/Piriform/code/Data/Nns6doubledense.txt")
+Nel=Int64(Nns[1])
+Ner=Int64(Nns[2])
+Npl=Int64(Nns[3])
+Npr=Int64(Nns[4])
+Nsl=Int64(Nns[5])
+Nsr=Int64(Nns[6])
+N0=Int64(Nns[7])
+Ncells=Int64(sum(Nns))
+params=readdlm("Documents/Piriform/code/Data/params2.txt")
+
+paramnum=size(params,1)
+
+validfulls=zeros(1,14)
+#validinds=readdlm("Documents/Piriform/code/Data/validinds.txt")
+#validnum=size(validinds,1)
+for i=26:34
+  #j=convert(Int64,validinds[i])
+  println(i)
+  stimrates=readdlm(string("Documents/Piriform/code/Data/",i,"-full10stimrates1.txt"))
+  ns=readdlm(string("Documents/Piriform/code/Data/",i,"-full10spikes1.txt"))
+  times=readdlm(string("Documents/Piriform/code/Data/",i,"-full10times1.txt"))
+  T=maximum(times)
+
+  lefr=mean(1000*ns[1:Nel,:]/T)
+  refr=mean(1000*ns[(Nel+1):(Nel+Ner),:]/T)
+  lpfr=mean(1000*ns[(Nel+Ner+1):(Nel+Ner+Npl),:]/T)
+  rpfr=mean(1000*ns[(Nel+Ner+Npl+1):(Nel+Ner+Npl+Npr),:]/T)
+  lsfr=mean(1000*ns[(Nel+Ner+Npl+Npr+1):(Nel+Ner+Npl+Npr+Nsl),:]/T)
+  rsfr=mean(1000*ns[(Nel+Ner+Npl+Npr+Nsl+1):(Nel+Ner+Npl+Npr+Nsl+Nsr),:]/T)
+  ifr=mean(1000*ns[(Nel+Ner+Npl+Npr+Nsl+Nsr):Ncells,:]/T)
+
+  if lefr>refr
+    validfulls=[validfulls; lefr refr lpfr rpfr lsfr rsfr ifr params[i,:] i]
+  end
+end
+
+size(validfulls)
+println(validfulls)
+validlonginds=validlongs[:,14]
+println(validlonginds)
+writedlm("Documents/Piriform/code/Data/validlongs.txt",validlonginds[2:end])
+
+allNs=[4500,9000,13500,18000,22500,27000,31500,36000,40500,45000]
+n=size(allNs,1)
+#frs3=zeros(4,n)
+frs16asym=zeros(7,n)
+#frs2=zeros(3,n)
+for i=1:n
+  N=allNs[i]
+#   stimrates=readdlm(string("Documents/Piriform/code/Data/",i,"-2stimrates1.txt"))
+#   ns=readdlm(string("Documents/Piriform/code/Data/",i,"-2spikes1.txt"))
+#   times=readdlm(string("Documents/Piriform/code/Data/",i,"-2times1.txt"))
+#   T=maximum(times)
+#   println(size(ns,1))
+#   Ne = convert(Int64,N*4.0/9)
+#   Ni = convert(Int64,N*1.0/9)
+#   N0 = convert(Int64,N*4.0/9)
+#   efr=mean(1000*ns[1:Ne]/T)
+#   inhfr=mean(1000*ns[(Ne+1):(Ni+Ne)]/T)
+#   ifr=mean(1000*ns[(Ne+Ni+1):N]/T)
+#   frs2[:,i]=[efr,inhfr,ifr]
+#   stimrates=readdlm(string("Documents/Piriform/code/Data/",i,"-3-1stimrates1.txt"))
+#   ns=readdlm(string("Documents/Piriform/code/Data/",i,"-3-1spikes1.txt"))
+#   times=readdlm(string("Documents/Piriform/code/Data/",i,"-3-1times1.txt"))
+#   T=maximum(times)
+#   println(size(ns,1))
+#   Ne = convert(Int64,N*4.0/9)
+#   Np = convert(Int64,N*1.0/18)
+#   Ns = convert(Int64,N*1.0/18)
+#   N0 = convert(Int64,N*4.0/9)
+#   efr=mean(1000*ns[1:Ne]/T)
+#   pfr=mean(1000*ns[(Ne+1):(Np+Ne)]/T)
+#   sfr=mean(1000*ns[(Ne+Np+1):(Np+Ns+Ne)]/T)
+#   ifr=mean(1000*ns[(Ne+Np+Ns+1):N]/T)
+#   frs3[:,i]=[efr,pfr,sfr,ifr]
+  stimrates=readdlm(string("Documents/Piriform/code/Data/",i,"-1-asymstimrates1.txt"))
+  ns=readdlm(string("Documents/Piriform/code/Data/",i,"-1-asymspikes1.txt"))
+  times=readdlm(string("Documents/Piriform/code/Data/",i,"-1-asymtimes1.txt"))
+  T=maximum(times)
+
+  Nel = convert(Int64,N*2.0/9)
+  Ner = convert(Int64,N*2.0/9)
+  Ne=Nel+Ner
+  Npl = convert(Int64,N*1.0/36)
+  Npr = convert(Int64,N*1.0/36)
+  Np=Npl+Npr
+  Nsl = convert(Int64,round(N*1.0/27))
+  Nsr = convert(Int64,round(N*1.0/54))
+  Ns=Nsl+Nsr
+  Ni=Np+Ns
+  N0 = convert(Int64,N*4.0/9)
+  println([Nel,Ner,Npl,Npr,Nsl,Nsr,N0])
+
+  lefr=mean(1000*ns[1:Nel,:]/T)
+  refr=mean(1000*ns[(Nel+1):(Nel+Ner),:]/T)
+  lpfr=mean(1000*ns[(Nel+Ner+1):(Nel+Ner+Npl),:]/T)
+  rpfr=mean(1000*ns[(Nel+Ner+Npl+1):(Nel+Ner+Npl+Npr),:]/T)
+  lsfr=mean(1000*ns[(Nel+Ner+Npl+Npr+1):(Nel+Ner+Npl+Npr+Nsl),:]/T)
+  rsfr=mean(1000*ns[(Nel+Ner+Npl+Npr+Nsl+1):(Nel+Ner+Npl+Npr+Nsl+Nsr),:]/T)
+  ifr=mean(1000*ns[(Nel+Ner+Npl+Npr+Nsl+Nsr):N,:]/T)
+  frs16asym[:,i]=[lefr,refr,lpfr,rpfr,lsfr,rsfr,ifr]
+end
+
+
+writedlm("Documents/Piriform/code/Data/frs2-1.txt",frs2)
+writedlm("Documents/Piriform/code/Data/frs3-1.txt",frs3)
+writedlm("Documents/Piriform/code/Data/frs6-1.txt",frs6)
+writedlm("Documents/Piriform/code/Data/frs6asym-419.txt",frs6asym)
+
+
+figure()
+plot(allNs,frs2[1,:]')
+plot(allNs,frs2[2,:]')
+#plot(allNs,frs2[3,:]')
+
+figure()
+plot(allNs,frs3[1,:]')
+plot(allNs,frs3[2,:]')
+plot(allNs,frs3[3,:]')
+#plot(allNs,frs3[4,:]')
+
+figure()
+plot(allNs,frs6[1,:]')
+plot(allNs,frs6[2,:]')
+plot(allNs,frs6[3,:]')
+plot(allNs,frs6[4,:]')
+plot(allNs,frs6[5,:]')
+plot(allNs,frs6[6,:]')
+#plot(allNs,frs6[7,:]')
+
+figure()
+plot(allNs,frs16asym[1,:]')
+plot(allNs,frs16asym[2,:]')
+plot(allNs,frs16asym[3,:]')
+plot(allNs,frs16asym[4,:]')
+plot(allNs,frs16asym[5,:]')
+plot(allNs,frs16asym[6,:]')
+#plot(allNs,frs6[7,:]')
+
+figure()
+plot(allNs,frs737[1,:]')
+plot(allNs,frs737[2,:]')
+plot(allNs,frs737[3,:]')
+plot(allNs,frs737[4,:]')
+plot(allNs,frs737[5,:]')
+plot(allNs,frs737[6,:]')
+#plot(allNs,frs6[7,:]')
+
+
+missed=[33,45,151,152,176,206,292,333,410,412,418,419,421,437,440,492,495,520,541,549,567,603,609,617,625,626,635,639,679,701,721,751,783,818,825,835,845,862,902,912,949,965,975,1016,1018,1047]
+size(valids)
+
+print(valids)
+
+writedlm("Documents/Piriform/code/Data/validsip2.txt",valids)
+
+stimrates=readdlm(string("Documents/Piriform/code/Data/3-rs1stimrates1.txt"))
+ns=readdlm(string("Documents/Piriform/code/Data/3-rs1spikes1.txt"))
+times=readdlm(string("Documents/Piriform/code/Data/3-rs1times1.txt"))
 T=maximum(times)
+lefr=mean(1000*ns[1:Nel,:]/T)
+refr=mean(1000*ns[(Nel+1):(Nel+Ner),:]/T)
+lpfr=mean(1000*ns[(Nel+Ner+1):(Nel+Ner+Npl),:]/T)
+rpfr=mean(1000*ns[(Nel+Ner+Npl+1):(Nel+Ner+Npl+Npr),:]/T)
+lsfr=mean(1000*ns[(Nel+Ner+Npl+Npr+1):(Nel+Ner+Npl+Npr+Nsl),:]/T)
+rsfr=mean(1000*ns[(Nel+Ner+Npl+Npr+Nsl+1):(Nel+Ner+Npl+Npr+Nsl+Nsr),:]/T)
+ifr=mean(1000*ns[(Nel+Ner+Npl+Npr+Nsl+Nsr):(Ncells),:]/T)
+println("mean left excitatory firing rate: ",lefr," Hz")
+println("mean right excitatory firing rate: ",refr," Hz")
+println("mean left PV firing rate: ",lpfr," Hz")
+println("mean right PV firing rate: ",rpfr," Hz")
+println("mean left SOM firing rate: ",lsfr," Hz")
+println("mean right SOM firing rate: ",rsfr," Hz")
+println("mean input firing rate: ",ifr," Hz")
+println("mean input firing rate (theoretically): ",mean(stimrates)," Hz")
 
 println("mean excitatory firing rate: ",mean(1000*ns[1:Ne]/T)," Hz")
 println("mean PV firing rate: ",mean(1000*ns[(Ne+1):(Np+Ne)]/T)," Hz")
-println("mean SOM firing rate: ",mean(1000*ns[(Ne+Np+1):(Ns+Np+Ne)]/T)," Hz")
+println("mean SOM firing rate: ",mean(1000*ns[(Ne+Np+1):(Np+Ns+Ne)]/T)," Hz")
 println("mean input firing rate: ",mean(1000*ns[(Ne+Np+Ns+1):(Ncells)]/T)," Hz")
 println("mean input firing rate (theoretically): ",mean(stimrates)," Hz")
 
-# println("mean excitatory firing rate: ",mean(1000*wns[1:Ne]/T)," Hz")
-# println("mean inhibitory firing rate: ",mean(1000*wns[(Ne+1):(Ni+Ne)]/T)," Hz")
-# println("mean input firing rate: ",mean(1000*wns[(Ne+Ni+1):(Ncells)]/T)," Hz")
-#println("mean input firing rate (theoretically): ",mean(stimrates)," Hz")
+allNs=[4500,9000,13500,18000,22500,27000,31500,36000,40500,45000]
+writedlm("Documents/Piriform/code/Data/allNs.txt",allNs)
 # v=readdlm(string("Documents/Piriform/code/Data/wv1.txt"))
 # figure()
 # pcolormesh(weights)
@@ -174,7 +386,7 @@ println("mean input firing rate (theoretically): ",mean(stimrates)," Hz")
 
 # s=size(find(sum(fdi1,1)),1)
 # plot(1:s,find(sum(fdi1,1)))
-
+using PyPlot
 println("creating plot")
 figure(figsize=(4,4))
 for ci = 1:(Ncells)
@@ -270,22 +482,36 @@ ylabel("Number of I neurons")
 #compute spareness index (SPI)
 Ni=Np+Ns
 espi=zeros(s)
-ispi=zeros(s)
+pspi=zeros(s)
+sspi=zeros(s)
 for i=1:s
   avgsq=(sum(1000*ns[1:Ne,i]/T)/Ne)^2
   sqavg=(sum((1000*ns[1:Ne,i]/T).^2)/Ne)
-  espi[i]=(1/(1-(1/Ne)))*(1-avgsq/sqavg)
+  espi[i]=(1.0/(1-(1.0/Ne)))*(1-avgsq/sqavg)
 
-  avgsq=(sum(1000*ns[(Ne+1):(Ni+Ne),i]/T)/Ni)^2
-  sqavg=(sum((1000*ns[(Ne+1):(Ni+Ne),i]/T).^2)/Ni)
-  ispi[i]=(1/(1-(1/Ni)))*(1-avgsq/sqavg)
+  avgsq=(sum(1000*ns[(Ne+1):(Np+Ne),i]/T)/Np)^2
+  sqavg=(sum((1000*ns[(Ne+1):(Np+Ne),i]/T).^2)/Np)
+  pspi[i]=(1.0/(1-(1.0/Np)))*(1-avgsq/sqavg)
+
+  avgsq=(sum(1000*ns[(Ne+Np+1):(Ni+Ne),i]/T)/Ns)^2
+  sqavg=(sum((1000*ns[(Ne+Np+1):(Ni+Ne),i]/T).^2)/Ns)
+  sspi[i]=(1.0/(1-(1.0/Ns)))*(1-avgsq/sqavg)
 end
 
 figure()
 plot(1:s,espi)
 plot(1:s,mean(espi)*ones(s))
-plot(1:s,ispi)
-plot(1:s,mean(ispi)*ones(s))
+plot(1:s,pspi)
+plot(1:s,mean(pspi)*ones(s))
+plot(1:s,sspi)
+plot(1:s,mean(sspi)*ones(s))
+plot(1:s,mean([pspi,sspi])*ones(s))
+
+s1=1
+figure()
+plot((Ne+1):(Ne+Np),ns[(Ne+1):(Ne+Np),s1])
+pspi[s1]
+espi[s1]
 
 #compute selectivity index (SLI)
 
@@ -301,13 +527,16 @@ for i=1:(Ne+Ni)
 end
 
 sorte=sortperm(sli[1:Ne])
-sorti=sortperm(sli[(Ne+1):(Ne+Ni)])
+sortp=sortperm(sli[(Ne+1):(Ne+Np)])
+sorts=sortperm(sli[(Ne+Np+1):(Ne+Ni)])
+figure()
+plot(1:s,ns[sorte[20000],:]')
 
 figure()
-plot(1:s,ns[sorte[200],:]')
+plot(1:s,ns[Ne+sortp[2500],:]')
 
 figure()
-plot(1:s,ns[sorti[500],:]')
+plot(1:s,ns[Ne+Np+sorts[2500],:]')
 
 figure()
 plot(1:Ne,sort(sli[1:Ne]))
@@ -322,10 +551,16 @@ bar(nesli[2:end],binsesli,.01)
 xlabel("SLI")
 ylabel("Number of E neurons")
 figure(figsize=(4,4))
-nisli, binsisli=hist(sli[(Ne+1):(Ni+Ne)],20)
-bar(nisli[2:end],binsisli,.01)
+nislp, binsislp=hist(sli[(Ne+1):(Np+Ne)],20)
+bar(nislp[2:end],binsislp,.01)
 xlabel("SLI")
-ylabel("Number of I neurons")
+ylabel("Number of PV neurons")
+figure(figsize=(4,4))
+nisls, binsisls=hist(sli[(Ne+Np+1):(Ni+Ne)],20)
+bar(nisls[2:end],binsisls,.01)
+xlabel("SLI")
+ylabel("Number of SOM neurons")
+
 
 #SLI vs rate at preferred stim
 
@@ -340,7 +575,10 @@ figure()
 scatter(ratepref[1:Ne],sli[1:Ne])
 
 figure()
-scatter(ratepref[(Ne+1):(Ne+Ni)],sli[(Ne+1):(Ne+Ni)])
+scatter(ratepref[(Ne+1):(Ne+Np)],sli[(Ne+1):(Ne+Np)])
+
+figure()
+scatter(ratepref[(Ne+Np+1):(Ne+Ni)],sli[(Ne+Np+1):(Ne+Ni)])
 
 # stimtimes=times[(Ne+Ni+1):Ncells,:]
 

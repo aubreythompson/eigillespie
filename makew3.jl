@@ -1,5 +1,3 @@
-
-
 Ne = 20000
 Np = 2500
 Ns = 2500
@@ -31,29 +29,14 @@ VI = -80 #inhibitory RP
 Vde = VE-VL
 Vdi = VI-VL
 
-#connection probabilities
-pe0 = K/N0
-pp0 = pe0
-ps0 = pe0
-ppp = K/Np
-pep = ppp
-psp = ppp
-pps = K/Ns
-pes = pps
-pss = pps
-pee = K/Ne
-ppe = pee
-pse = pee
-
-sqrtK = sqrt(K)
-
-#	Nepop = 80
-rpse=1.0 #ratio of jse:jpe (excitatory connection to SOM:to PV)
-reps=0.5 #ratio of jes:jep (excitatory connection from SOM:from PV)
-rips=0.7 #ratio of jss:jpp (interconnection within SOM:within PV)
-rrps=0.3 #ratio of jsp:jps (reciprocal connections between i pops from PV:from SOM)
+rpse=0.9 #ratio of jse:jpe (excitatory connection to SOM:to PV)
+reps=0.2 #ratio of jes:jep (excitatory connection from SOM:from PV)
+rips=0.9 #ratio of jss:jpp (interconnection within SOM:within PV)
+rrps=0.2 #ratio of jsp:jps (reciprocal connections between i pops from PV:from SOM)
 rps0=1.0 #ratio of js0:jp0 (input layer to SOM:to PV)
 rpsp=1.0 #ratio of jps:jpp (PV input to SOM:to PV)
+
+sqrtK = sqrt(K)
 
 je0 = 4.846*Vde*gEL*tau1/sqrtK
 jp0 = 3.808*Vde*gIL*tau1/sqrtK
@@ -71,6 +54,20 @@ jss = jpp*rips
 fre=(je0*(jpp*jss - jps*jsp) - jp0*(jep*jss - jes*jsp) + js0*(jep*jps - jes*jpp))/(jee*jpp*jss - jee*jps*jsp - jep*jpe*jss + jep*jps*jse + jes*jpe*jsp - jes*jpp*jse)
 frs=(je0*(jpe*jsp - jpp*jse) - jp0*(jee*jsp - jep*jse) + js0*(jee*jpp - jep*jpe))/(jee*jpp*jss - jee*jps*jsp - jep*jpe*jss + jep*jps*jse + jes*jpe*jsp - jes*jpp*jse)
 frp=(-je0*(jpe*jss - jps*jse) + jp0*(jee*jss - jes*jse) - js0*(jee*jps - jes*jpe))/(jee*jpp*jss - jee*jps*jsp - jep*jpe*jss + jep*jps*jse + jes*jpe*jsp - jes*jpp*jse)
+
+#connection probabilities
+pe0 = K/N0
+pp0 = pe0
+ps0 = pp0*rps0
+ppp = K/Np
+pep = ppp
+pes = pep*reps
+pps = K/Ns
+psp = pps*rrps
+pss = ppp*rips
+pee = K/Ne
+ppe = pee
+pse = ppe*rpse
 
 J=[je0 jp0 js0 jee jpe jse jes jep jss jps jsp jpp]
 tau = zeros(Ne+Np+Ns)
@@ -163,23 +160,41 @@ projections=readdlm("Documents/Piriform/code/Data/projections3.txt")
 Ks=readdlm("Documents/Piriform/code/Data/Ks3.txt")
 writedlm("Documents/Piriform/code/Data/J3.txt", J)
 writedlm("Documents/Piriform/code/Data/tau3.txt", tau)
+writedlm("Documents/Piriform/code/Data/J3.txt", J)
 
 
-Js=readdlm("Documents/Piriform/code/Data/J3.txt")
+projections=readdlm("Documents/Piriform/projections3jp.txt")
 
-je0=Js[1]
-jp0=Js[2]
-js0=Js[3]
-jee=Js[4]
-jpe=Js[5]
-jse=Js[6]
-jes=Js[7]
-jep=Js[8]
-jss=Js[9]
-jps=Js[10]
-jsp=Js[11]
-jpp=Js[12]
+Ks3jp=zeros(Ncells)
+j=1
+k=0
+for i=1:Ncells
+  while j<size(projections,1) && projections[j+1]>projections[j]
+    j=j+1
+    k=k+1
+  end
+  Ks3jp[i]=k+1
+  k=0
+  j=j+1
+end
 
-fre=(je0*(jpp*jss - jps*jsp) - jp0*(jep*jss - jes*jsp) + js0*(jep*jps - jes*jpp))/(jee*jpp*jss - jee*jps*jsp - jep*jpe*jss + jep*jps*jse + jes*jpe*jsp - jes*jpp*jse)
-frs=(je0*(jpe*jsp - jpp*jse) - jp0*(jee*jsp - jep*jse) + js0*(jee*jpp - jep*jpe))/(jee*jpp*jss - jee*jps*jsp - jep*jpe*jss + jep*jps*jse + jes*jpe*jsp - jes*jpp*jse)
-frp=(-je0*(jpe*jss - jps*jse) + jp0*(jee*jss - jes*jse) - js0*(jee*jps - jes*jpe))/(jee*jpp*jss - jee*jps*jsp - jep*jpe*jss + jep*jps*jse + jes*jpe*jsp - jes*jpp*jse)
+println(Ks3jp)
+writedlm("Documents/Piriform/code/Data/Ks3jp.txt", Ks3jp)
+# Js=readdlm("Documents/Piriform/code/Data/J3.txt")
+
+# je0=Js[1]
+# jp0=Js[2]
+# js0=Js[3]
+# jee=Js[4]
+# jpe=Js[5]
+# jse=Js[6]
+# jes=Js[7]
+# jep=Js[8]
+# jss=Js[9]
+# jps=Js[10]
+# jsp=Js[11]
+# jpp=Js[12]
+
+# fre=(je0*(jpp*jss - jps*jsp) - jp0*(jep*jss - jes*jsp) + js0*(jep*jps - jes*jpp))/(jee*jpp*jss - jee*jps*jsp - jep*jpe*jss + jep*jps*jse + jes*jpe*jsp - jes*jpp*jse)
+# frs=(je0*(jpe*jsp - jpp*jse) - jp0*(jee*jsp - jep*jse) + js0*(jee*jpp - jep*jpe))/(jee*jpp*jss - jee*jps*jsp - jep*jpe*jss + jep*jps*jse + jes*jpe*jsp - jes*jpp*jse)
+# frp=(-je0*(jpe*jss - jps*jse) + jp0*(jee*jss - jes*jse) - js0*(jee*jps - jes*jpe))/(jee*jpp*jss - jee*jps*jsp - jep*jpe*jss + jep*jps*jse + jes*jpe*jsp - jes*jpp*jse)
