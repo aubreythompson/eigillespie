@@ -1,0 +1,23 @@
+## bash script to make a connectivity matrix and then run a trial with it
+
+#PBS -S /bin/bash
+
+#PBS -j oe
+
+#PBS -o output_files
+
+#PBS -l nodes=1:ppn=1
+
+#PBS -l walltime=30:00:00
+
+#PBS -m abe
+
+# uncomment the line below to schedule a job array
+
+##PBS -t 1-30
+
+module load julia-0.3.6
+echo "Starting run at: `date`"
+julia Piriform/makew6.jl
+julia Piriform/runsompsimp6.jl
+echo "Job finished with exit code $? at: `date`"

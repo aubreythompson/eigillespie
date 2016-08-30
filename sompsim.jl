@@ -1,5 +1,6 @@
-#this file is part of alk_cluster_2012
 #Copyright (C) 2014 Ashok Litwin-Kumar
+#modified by Aubrey Thompson 2016 to simulate
+#Pehlevan, Sompolinsky: Selectivity and Sparseness in Randomly Connected Balanced Networks
 #see README for more information
 using Distributions
 
@@ -18,7 +19,7 @@ function sompsim(stim)
   println("setting up sim parameters")
   #if you change gEL, you also need to change it in makew!
   gEL=0.05
-	T = 50 #simulation time (ms)
+	T = 100 #simulation time (ms)
 
   taua = 100
   tau1 = 3
@@ -35,10 +36,7 @@ function sompsim(stim)
   #input statistics
   #input neurons fire with Poisson spike trains with rates given by an exponential distribution
   #each stimulus generates a random input firing rate pattern
-  #(each stim is given to the input layer? in a way the input layer represents the stim?)
-
   #the mean population rate of all the stimuli is 10.16
-  #but also, population rate=avg(neuron's rates)
   ud=Uniform()
   if stim==0
     r = 10.16 #mean firing rate (Hz)
@@ -59,21 +57,11 @@ function sompsim(stim)
     stimrates=readdlm(string("stimrates",stim,".txt"))
   end
 
-#  	tau = zeros(Ncells)
-#   gL = zeros(Ncells)
-
-# 	tau[1:Ne] = taue
-# 	tau[(1+Ne):Ncells] = taui
-
-#   gL[1:Ne] = gEL
-# 	gL[(1+Ne):(Ne+Ni)] = gIL
-
 	maxTimes = round(Int,maxrate*T/1000)
 	times = zeros(Ncells,maxTimes)
 	ns = zeros(Int,Ncells)
 
   #forwardInputsX are inputs FROM X TO neuron at index
-  #oh, that means forwardInputs0 should be a thing? I guess I'm crazy??
 	forwardInputsE = zeros(Ne+Ni) #summed weight of incoming E spikes
 	forwardInputsI = zeros(Ne+Ni)
   forwardInputs0 = zeros(Ne+Ni)
@@ -120,9 +108,7 @@ function sompsim(stim)
       if ci<Ne
         adaptInput[ci] += -dt*adaptInput[ci]/taua
       end
-# 			if (ci < Nstim) && (t > stimstart) && (t < stimend)
-# 				synInput += stimstr;
-# 			end
+
 			if t > (lastSpike[ci] + refrac)  #not in refractory period
 				v[ci] += dt*(VL-v[ci])/tau[ci] + synInput - adaptInput[ci]
 				if v[ci] > Vth  #spike occurred
