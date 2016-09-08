@@ -15,10 +15,9 @@ The model parameters are all the same as [1] except that one can modify the rela
 - rips: ratio of interconnection within SOM:within PV
 - rrps: ratio of reciprocal connections between i pops from PV:from SOM
 
-There are a couple other ratios which I allow to be varied but probably make the most sense as 1:
+There is one other ratio which I allow to be varied but probably makes the most sense as 1:
 
 - rps0=ratio of input layer to SOM:to PV
-- rpsp=ratio of PV input to SOM:to PV
 
 #The code
 Adapted from Ashok Litwin-Kumar’s cluster model (Nature Neuro 2012) code.
