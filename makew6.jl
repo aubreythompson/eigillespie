@@ -72,7 +72,6 @@ reps=runparams[2] #ratio of jes:jep (excitatory connection from SOM:from PV)
 rips=runparams[3] #ratio of jss:jpp (interconnection within SOM:within PV)
 rrps=runparams[4] #ratio of jsp:jps (reciprocal connections between i pops from PV:from SOM)
 rps0=runparams[5] #ratio of js0:jp0 (input layer to SOM:to PV)
-rpsp=runparams[6] #ratio of jps:jpp (PV input to SOM:to PV)
 delta=0
 
 sqrtK = sqrt(K)
