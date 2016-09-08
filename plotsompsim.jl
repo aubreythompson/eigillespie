@@ -1,7 +1,7 @@
 using PyPlot
 
 #import N parameters
-Nns=readdlm("Documents/Piriform/code/Data/Nns6.txt")
+Nns=readdlm("Documents/Piriform/code/Data/Nns6doubledensesmall.txt")
 Nel=Int64(Nns[1])
 Ner=Int64(Nns[2])
 Npl=Int64(Nns[3])
@@ -16,9 +16,9 @@ Ni=Np+Ns
 Ncells=Int64(sum(Nns))
 
 #import spike times of neurons
-stimrates=readdlm(string("Documents/Piriform/code/Data/stimrates1.txt"))
-ns=readdlm(string("Documents/Piriform/code/Data/spikes1.txt"))
-times=readdlm(string("Documents/Piriform/code/Data/times1.txt"))
+stimrates=readdlm(string("Documents/Piriform/code/Data/11-2longstimrates1.txt"))
+ns=readdlm(string("Documents/Piriform/code/Data/11-2longspikes1.txt"))
+times=readdlm(string("Documents/Piriform/code/Data/11-2longtimes1.txt"))
 T=maximum(times)
 
 #plot raster
@@ -109,11 +109,11 @@ ylabel("Number of I neurons")
 params=readdlm("Documents/Piriform/code/Data/params2.txt")
 paramnum=size(params,1)
 valids=zeros(1,14) #save parameters which give higher E firing rate on the left
-for i=1:paramnum
+for i=11:paramnum
   println(i)
-  stimrates=readdlm(string("Documents/Piriform/code/Data/",i,"-stimrates1.txt"))
-  ns=readdlm(string("Documents/Piriform/code/Data/",i,"-spikes1.txt"))
-  times=readdlm(string("Documents/Piriform/code/Data/",i,"-times1.txt"))
+  stimrates=readdlm(string("Documents/Piriform/code/Data/",i,"-2longstimrates1.txt"))
+  ns=readdlm(string("Documents/Piriform/code/Data/",i,"-2longspikes1.txt"))
+  times=readdlm(string("Documents/Piriform/code/Data/",i,"-2longtimes1.txt"))
   T=maximum(times)
 
   lefr=mean(1000*ns[1:Nel,:]/T)

@@ -26,7 +26,7 @@ n=1
 include("sompsim6.jl")
 
 tic()
-times,spikes,Ne,Np,Ns,Ncells,T,stimrates = sompsim(stim,n) #input 0 if you want a new stim
+times,spikes,stimrates = sompsim(stim,n) #input 0 if you want a new stim
 toc()
 
 #make sure you don't save over current stims
